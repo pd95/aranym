@@ -147,6 +147,7 @@ void HostScreenOpenGL::setVideoMode(int width, int height, int bpp)
 	}
 
 	SDL_DisplayMode mode, oldmode;
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_VIDEO, SDL_LOG_PRIORITY_DEBUG);
 
 	if (window)
 		SDL_GetWindowDisplayMode(window, &oldmode);

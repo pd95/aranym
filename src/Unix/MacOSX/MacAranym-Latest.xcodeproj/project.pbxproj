@@ -843,6 +843,7 @@
 		1736B1010C70ED5900C56FAF /* SDLMain.h */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = "<group>"; };
 		1736B1020C70ED5900C56FAF /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 5; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = "<group>"; };
 		17398E110B21048100A9B4DB /* README.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = README.rtf; sourceTree = "<group>"; };
+		173FA46E28EAEC88003E5CE4 /* MacAranym.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MacAranym.entitlements; sourceTree = "<group>"; };
 		1743987C0B320B480011038E /* README_Xcode.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = README_Xcode.rtf; sourceTree = "<group>"; };
 		17473D1415AA07FD00CAEA47 /* bpf_helper.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; lineEnding = 0; path = bpf_helper.c; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
 		17473D1515AA07FD00CAEA47 /* ethernet_macosx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ethernet_macosx.cpp; sourceTree = "<group>"; };
@@ -1288,6 +1289,7 @@
 				B428FAF50C7BA7100039CA66 /* aranym.nib */,
 				1736B0FD0C70ED5900C56FAF /* aranym.icns */,
 				1736B1000C70ED5900C56FAF /* Info.plist */,
+				173FA46E28EAEC88003E5CE4 /* MacAranym.entitlements */,
 				1736B1010C70ED5900C56FAF /* SDLMain.h */,
 				1736B1020C70ED5900C56FAF /* SDLMain.m */,
 			);
@@ -2095,6 +2097,7 @@
 		};
 		17AAB2A80B20A8150016FB8D /* Script: Create Diskimage */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 12;
 			files = (
 			);
@@ -2760,14 +2763,13 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMPILE_DEFS_BASE = "$(inherited) DIRECT_ADDRESSING FPU_UAE";
 				CONFIGURE_OPTIONS_TARGET = "--enable-fpe=uae --disable-fullmmu";
-				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "$(COMPILE_DEFS_$(arch))";
 				INFOPLIST_FILE = "../../gui-osx/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym;
+				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym.aranym;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -2796,6 +2798,10 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "$(SOURCE_DIR)/gui-osx/MacAranym.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_INJECT_BASE_ENTITLEMENTS = NO;
+				CODE_SIGN_STYLE = Manual;
 				COMPILE_DEFS_BASE = "HAVE_CONFIG_H OS_darwin _GNU_SOURCE ENABLE_EXCLUSIVE_SPCFLAGS";
 				COMPILE_DEFS_arm64 = "CPU_arm $(COMPILE_DEFS_BASE) ARM_ASSEMBLY ARMV6_ASSEMBLY";
 				COMPILE_DEFS_i386 = "CPU_i386 X86_ASSEMBLY $(COMPILE_DEFS_BASE) OPTIMIZED_FLAGS REGPARAM=\"__attribute__((regparm(3)))\" SAHF_SETO_PROFITABLE UNALIGNED_PROFITABLE";
@@ -2810,6 +2816,7 @@
 				CPU_TYPE_ppc = CPU_powerpc;
 				CPU_TYPE_x86_64 = CPU_x86_64;
 				CURRENT_PROJECT_VERSION = "##VERSION##";
+				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					.,
@@ -2830,6 +2837,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks/";
 				LIBRARY_SEARCH_PATHS = external/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				OTHER_CODE_SIGN_FLAGS = "--timestamp";
 				OTHER_LDFLAGS = (
 					"-Lexternal/lib",
 					"-ljpeg",
@@ -2861,6 +2869,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = OS_darwin;
 				LD_RUNPATH_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aranym.MacAranym.bpf-helper";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(BUILD_DIR)",
@@ -2887,6 +2896,7 @@
 				GCC_PREPROCESSOR_DEFINITIONS = OS_darwin;
 				LD_RUNPATH_SEARCH_PATHS = "";
 				OTHER_LDFLAGS = "";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aranym.MacAranym.bpf-helper";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				USER_HEADER_SEARCH_PATHS = (
 					"$(BUILD_DIR)",
@@ -2921,7 +2931,7 @@
 					"-lmpfr",
 					"-lgmp",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aranym.MacAranym.aranym-mpfr";
 				PRODUCT_NAME = "MacAranym MMU MPFR";
 			};
 			name = Debug;
@@ -2945,7 +2955,7 @@
 					"-lmpfr",
 					"-lgmp",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aranym.MacAranym.aranym-mpfr";
 				PRODUCT_NAME = "MacAranym MMU MPFR";
 			};
 			name = Release;
@@ -2982,7 +2992,7 @@
 					"$(inherited)",
 					"-lz",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aranym.MacAranym.aranym-mmu";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -3003,7 +3013,7 @@
 					"$(inherited)",
 					"-lz",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aranym.MacAranym.aranym-mmu";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -3014,14 +3024,13 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMPILE_DEFS_BASE = "$(inherited) DIRECT_ADDRESSING FPU_UAE";
 				CONFIGURE_OPTIONS_TARGET = "--enable-fpe=uae --disable-fullmmu";
-				DEVELOPMENT_TEAM = "";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
 				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "$(COMPILE_DEFS_$(arch))";
 				INFOPLIST_FILE = "../../gui-osx/Info.plist";
-				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym;
+				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym.aranym;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
@@ -3050,6 +3059,9 @@
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_ENTITLEMENTS = "$(SOURCE_DIR)/gui-osx/MacAranym.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMPILE_DEFS_BASE = "HAVE_CONFIG_H OS_darwin _GNU_SOURCE ENABLE_EXCLUSIVE_SPCFLAGS";
 				COMPILE_DEFS_arm64 = "CPU_arm $(COMPILE_DEFS_BASE) ARM_ASSEMBLY ARMV6_ASSEMBLY";
 				COMPILE_DEFS_i386 = "CPU_i386 X86_ASSEMBLY $(COMPILE_DEFS_BASE) OPTIMIZED_FLAGS REGPARAM=\"__attribute__((regparm(3)))\" SAHF_SETO_PROFITABLE UNALIGNED_PROFITABLE";
@@ -3086,6 +3098,7 @@
 				LIBRARY_SEARCH_PATHS = external/lib;
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_CODE_SIGN_FLAGS = "--timestamp";
 				OTHER_LDFLAGS = (
 					"-Lexternal/lib",
 					"-ljpeg",
@@ -3124,7 +3137,7 @@
 					"-pagezero_size",
 					0x2000,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aranym.MacAranym.aranym-jit";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "i386 x86_64";
 			};
@@ -3148,7 +3161,7 @@
 					"-pagezero_size",
 					0x2000,
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = org.aranym.MacAranym;
+				PRODUCT_BUNDLE_IDENTIFIER = "org.aranym.MacAranym.aranym-jit";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				VALID_ARCHS = "i386 x86_64";
 			};
