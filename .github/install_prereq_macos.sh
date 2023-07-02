@@ -3,6 +3,8 @@
 mkdir tmp
 cd tmp
 
+brew install autoconf automake
+
 # SDL2
 curl --get https://www.libsdl.org/release/SDL2-2.28.1.dmg --output SDL2.dmg
 mkdir sdltmp
