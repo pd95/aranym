@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Build notarize and upload MacAranym diskimage
-    runs-on: [self-hosted, macOS]
+    runs-on: macos-latest # [self-hosted, macOS]
 
     steps:
       - name: Checkout
@@ -24,7 +24,7 @@ jobs:
         run: |
           # create variables
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+          KEYCHAIN_PATH=$RUNNER_TEMP/build.keychain-db
 
           # import certificate from secrets
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
@@ -37,6 +37,9 @@ jobs:
           # import certificate to keychain
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security list-keychain -d user -s $KEYCHAIN_PATH
+          
+          # Make sure apple tools can access keychain item
+          #security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
       - name: Xcode version
         run: /usr/bin/xcodebuild -version
@@ -73,4 +76,4 @@ jobs:
       - name: Clean up keychain
         if: ${{ always() }}
         run: |
-          security delete-keychain $RUNNER_TEMP/app-signing.keychain-db
+          security delete-keychain $RUNNER_TEMP/build.keychain-db
