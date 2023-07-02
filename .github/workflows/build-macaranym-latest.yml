@@ -24,7 +24,7 @@ jobs:
       
       - name: Build
         run: |
-          xcodebuild clean build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration release | xcpretty && exit ${PIPESTATUS[0]}
+          xcodebuild clean build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration Release
 
       - name: Upload results
         uses:  actions/upload-artifact@v3
