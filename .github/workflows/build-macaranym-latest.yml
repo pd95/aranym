@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build and analyse default scheme using xcodebuild command
+    name: Build and upload diskimage
     runs-on: macos-latest
 
     steps:
@@ -23,4 +23,10 @@ jobs:
       
       - name: Build
         run: |
-          xcodebuild clean build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -scheme Packaging | xcpretty && exit ${PIPESTATUS[0]}
+          xcodebuild clean build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration release | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Upload results
+        run:  actions/upload-artifact@v3
+        with:
+          name: Diskimage
+          path: src/Unix/MacOSX/build/aranym-*.dmg
