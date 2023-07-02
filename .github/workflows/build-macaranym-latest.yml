@@ -1,6 +1,7 @@
 name: Build macOS package from MacAranym-Latest.xcodeproj
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ]
   pull_request:
