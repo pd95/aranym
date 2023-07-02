@@ -27,7 +27,7 @@ jobs:
           xcodebuild clean build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration release | xcpretty && exit ${PIPESTATUS[0]}
 
       - name: Upload results
-        run:  actions/upload-artifact@v3
+        uses:  actions/upload-artifact@v3
         with:
           name: Diskimage
           path: src/Unix/MacOSX/build/aranym-*.dmg
