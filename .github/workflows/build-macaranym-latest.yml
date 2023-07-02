@@ -19,7 +19,7 @@ jobs:
         run: /usr/bin/xcodebuild -version
         
       - name: Install Prerequisites
-        run:  curl --get https://www.libsdl.org/release/SDL2-2.28.1.dmg --output SDL2.dmg
+        run:  .github/install_prereq_macos.sh
       
       - name: Build
         run: |
