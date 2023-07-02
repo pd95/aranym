@@ -17,8 +17,6 @@
 			);
 			dependencies = (
 				170D33D1260671B700F5313F /* PBXTargetDependency */,
-				170D33D3260671B700F5313F /* PBXTargetDependency */,
-				170D33D5260671B700F5313F /* PBXTargetDependency */,
 			);
 			name = Packaging;
 			productName = "Build Release Package";
@@ -623,20 +621,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8D1107260486CEB800E47090;
 			remoteInfo = MacAranym;
-		};
-		170D33D2260671B700F5313F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = B439AC2F0C5B2FD00046EFC9;
-			remoteInfo = "MacAranym JIT";
-		};
-		170D33D4260671B700F5313F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 17BCD7880B20F64F00432CE1;
-			remoteInfo = "MacAranym MMU";
 		};
 		17473D3315AA0A5D00CAEA47 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -2702,16 +2686,6 @@
 			isa = PBXTargetDependency;
 			target = 8D1107260486CEB800E47090 /* MacAranym */;
 			targetProxy = 170D33D0260671B700F5313F /* PBXContainerItemProxy */;
-		};
-		170D33D3260671B700F5313F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = B439AC2F0C5B2FD00046EFC9 /* MacAranym JIT */;
-			targetProxy = 170D33D2260671B700F5313F /* PBXContainerItemProxy */;
-		};
-		170D33D5260671B700F5313F /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 17BCD7880B20F64F00432CE1 /* MacAranym MMU */;
-			targetProxy = 170D33D4260671B700F5313F /* PBXContainerItemProxy */;
 		};
 		17473D3415AA0A5D00CAEA47 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
