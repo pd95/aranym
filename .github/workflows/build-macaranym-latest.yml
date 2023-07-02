@@ -53,7 +53,7 @@ jobs:
           else
             CODE_SIGN_IDENTITY=" "
           fi
-          xcodebuild build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration Release CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
+          xcodebuild build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration Release CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" | xcpretty && exit ${PIPESTATUS[0]}
 
       - name: Notarize diskimage
         env:
