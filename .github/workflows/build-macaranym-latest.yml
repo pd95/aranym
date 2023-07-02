@@ -48,24 +48,23 @@ jobs:
         env:
           DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
         run: |
-          if [ "x$DEVELOPMENT_TEAM" != "x" ]; then
-            CODE_SIGN_IDENTITY="Developer ID Application"
-          else
-            CODE_SIGN_IDENTITY=" "
-          fi
-          xcodebuild build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration Release CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" | xcpretty && exit ${PIPESTATUS[0]}
+          xcodebuild build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration Release \
+            CODE_SIGN_IDENTITY="Developer ID Application" \
+            CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM" \
+            | xcpretty && exit ${PIPESTATUS[0]}
 
-      - name: Notarize diskimage
+      - name: Notarize dmg
         env:
           AC_ACCOUNT: ${{ secrets.AC_ACCOUNT }}
           AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
           DEVELOPMENT_TEAM: ${{ secrets.DEVELOPMENT_TEAM }}
         run: |
           cd src/Unix/MacOSX/build/Release/
-          xcrun notarytool submit aranym-*.dmg --apple-id "$AC_ACCOUNT" --password "$AC_PASSWORD" --team-id "$DEVELOPMENT_TEAM" --wait
+          xcrun notarytool store-credentials AC_PASSWORD --apple-id "$AC_ACCOUNT" --team-id "$DEVELOPMENT_TEAM" --password "$AC_PASSWORD"
+          xcrun notarytool submit aranym-*.dmg --keychain-profile AC_PASSWORD --wait
           xcrun stapler staple aranym-*.dmg
 
-      - name: Upload results
+      - name: Upload dmg
         uses: actions/upload-artifact@v3
         with:
           name: MacAranym disk image
