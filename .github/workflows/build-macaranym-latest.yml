@@ -1,0 +1,26 @@
+name: Build macOS package from MacAranym-Latest.xcodeproj
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and analyse default scheme using xcodebuild command
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Xcode version
+        run: /usr/bin/xcodebuild -version
+        
+      - name: Install Prerequisites
+        run:  curl --get https://www.libsdl.org/release/SDL2-2.28.1.dmg --output SDL2.dmg
+      
+      - name: Build
+        run: |
+          xcodebuild clean build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -scheme Packaging | xcpretty && exit ${PIPESTATUS[0]}
