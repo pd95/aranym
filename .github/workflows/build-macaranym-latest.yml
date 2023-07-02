@@ -1,0 +1,33 @@
+name: Build macOS package from MacAranym-Latest.xcodeproj
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and upload diskimage
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Xcode version
+        run: /usr/bin/xcodebuild -version
+        
+      - name: Install Prerequisites
+        run:  .github/install_prereq_macos.sh
+      
+      - name: Build
+        run: |
+          xcodebuild clean build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration release | xcpretty && exit ${PIPESTATUS[0]}
+
+      - name: Upload results
+        run:  actions/upload-artifact@v3
+        with:
+          name: Diskimage
+          path: src/Unix/MacOSX/build/aranym-*.dmg
