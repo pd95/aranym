@@ -17,6 +17,8 @@
 			);
 			dependencies = (
 				170D33D1260671B700F5313F /* PBXTargetDependency */,
+				170D33D3260671B700F5313F /* PBXTargetDependency */,
+				170D33D5260671B700F5313F /* PBXTargetDependency */,
 			);
 			name = Packaging;
 			productName = "Build Release Package";
@@ -283,6 +285,7 @@
 		177A4E0C15AA29C000780D11 /* fd_trans.c in Sources */ = {isa = PBXBuildFile; fileRef = 17473D1715AA07FD00CAEA47 /* fd_trans.c */; };
 		17AAB12C0B206BF20016FB8D /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 17AAB1190B206BF20016FB8D /* OpenGL.framework */; };
 		17AAB1320B206C0E0016FB8D /* nfvdi_opengl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17798DA40A652B51009733EB /* nfvdi_opengl.cpp */; };
+		17B1146E151E6A4500E4EB0F /* MacAranym JIT.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = B439AC9B0C5B2FD00046EFC9 /* MacAranym JIT.app */; };
 		17BAC50828EACE8E0031CE01 /* bootos_netbsd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17BAC50728EACE8E0031CE01 /* bootos_netbsd.cpp */; };
 		17BAC50928EACE8E0031CE01 /* bootos_netbsd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17BAC50728EACE8E0031CE01 /* bootos_netbsd.cpp */; };
 		17BAC50A28EACE8E0031CE01 /* bootos_netbsd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 17BAC50728EACE8E0031CE01 /* bootos_netbsd.cpp */; };
@@ -583,6 +586,7 @@
 		B4A9EC090C5B3C3900C156C3 /* ethernet_darwin.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B4A9E9C10C5B33AC00C156C3 /* ethernet_darwin.cpp */; };
 		B4C7EE951768552800B63B96 /* MachServer.c in Sources */ = {isa = PBXBuildFile; fileRef = B4C7EE931768552800B63B96 /* MachServer.c */; };
 		B4C7EE961768552800B63B96 /* MachUser.c in Sources */ = {isa = PBXBuildFile; fileRef = B4C7EE941768552800B63B96 /* MachUser.c */; };
+		B4E213CE0C5BA74600138A7F /* MacAranym MMU.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 17BCD7E90B20F65000432CE1 /* MacAranym MMU.app */; };
 		B4E213CF0C5BA74600138A7F /* MacAranym.app in CopyFiles */ = {isa = PBXBuildFile; fileRef = 8D1107320486CEB800E47090 /* MacAranym.app */; };
 		CBBC87021B5F97DE00C0DABF /* glenums.c in Sources */ = {isa = PBXBuildFile; fileRef = CBBC87011B5F97DE00C0DABF /* glenums.c */; };
 		CBBC87031B5F97DE00C0DABF /* glenums.c in Sources */ = {isa = PBXBuildFile; fileRef = CBBC87011B5F97DE00C0DABF /* glenums.c */; };
@@ -619,6 +623,20 @@
 			proxyType = 1;
 			remoteGlobalIDString = 8D1107260486CEB800E47090;
 			remoteInfo = MacAranym;
+		};
+		170D33D2260671B700F5313F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B439AC2F0C5B2FD00046EFC9;
+			remoteInfo = "MacAranym JIT";
+		};
+		170D33D4260671B700F5313F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 17BCD7880B20F64F00432CE1;
+			remoteInfo = "MacAranym MMU";
 		};
 		17473D3315AA0A5D00CAEA47 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -780,7 +798,9 @@
 			dstSubfolderSpec = 16;
 			files = (
 				1730EDFD160F9BDF002EC84E /* README_ethernet.rtf in CopyFiles */,
+				B4E213CE0C5BA74600138A7F /* MacAranym MMU.app in CopyFiles */,
 				B4E213CF0C5BA74600138A7F /* MacAranym.app in CopyFiles */,
+				17B1146E151E6A4500E4EB0F /* MacAranym JIT.app in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2682,6 +2702,16 @@
 			isa = PBXTargetDependency;
 			target = 8D1107260486CEB800E47090 /* MacAranym */;
 			targetProxy = 170D33D0260671B700F5313F /* PBXContainerItemProxy */;
+		};
+		170D33D3260671B700F5313F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B439AC2F0C5B2FD00046EFC9 /* MacAranym JIT */;
+			targetProxy = 170D33D2260671B700F5313F /* PBXContainerItemProxy */;
+		};
+		170D33D5260671B700F5313F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 17BCD7880B20F64F00432CE1 /* MacAranym MMU */;
+			targetProxy = 170D33D4260671B700F5313F /* PBXContainerItemProxy */;
 		};
 		17473D3415AA0A5D00CAEA47 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
