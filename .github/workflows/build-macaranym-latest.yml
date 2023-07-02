@@ -56,10 +56,10 @@ jobs:
           xcodebuild build -project src/Unix/MacOSX/MacAranym-latest.xcodeproj -target Packaging -configuration Release CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO DEVELOPMENT_TEAM="$DEVELOPMENT_TEAM"
 
       - name: Upload results
-        uses:  actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3
         with:
           name: Diskimage
-          path: src/Unix/MacOSX/build/aranym-*.dmg
+          path: src/Unix/MacOSX/build/Release/aranym-*.dmg
 
       - name: Clean up keychain
         if: ${{ always() }}
