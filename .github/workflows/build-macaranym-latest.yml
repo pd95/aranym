@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     name: Build notarize and upload MacAranym diskimage
-    runs-on: macos-latest
+    runs-on: [self-hosted, macOS]
 
     steps:
       - name: Checkout
