@@ -39,3 +39,6 @@ for i in .4 .6; do
     test -f libmpfr${i}.dylib && ln libmpfr${i}.dylib libmpfr.dylib
 done
 cd ..
+
+# cleanup tmp
+rm -rf tmp
