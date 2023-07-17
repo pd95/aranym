@@ -513,6 +513,7 @@ static int keysymToAtari(SDL_Keysym *keysym)
 		case SDL_SCANCODE_GRAVE: scancode = 0x29; break;
 		case SDL_SCANCODE_LSHIFT: scancode = 0x2a; break;
 		case SDL_SCANCODE_BACKSLASH: scancode = 0x2b; break;
+		case SDL_SCANCODE_NONUSHASH: scancode = 0x2b; break;
 		case SDL_SCANCODE_Z: scancode = 0x2c; break;
 		case SDL_SCANCODE_X: scancode = 0x2d; break;
 		case SDL_SCANCODE_C: scancode = 0x2e; break;
@@ -524,7 +525,7 @@ static int keysymToAtari(SDL_Keysym *keysym)
 		case SDL_SCANCODE_PERIOD: scancode = 0x34; break;
 		case SDL_SCANCODE_SLASH: scancode = 0x35; break;
 		case SDL_SCANCODE_RSHIFT: scancode = 0x36; break;
-		case SDL_SCANCODE_PRINTSCREEN: scancode = 0x37; break;
+		//case SDL_SCANCODE_PRINTSCREEN: scancode = 0x37; break;  // Not used on Atari, why map it?
 		case SDL_SCANCODE_LALT: scancode = 0x38; break;
 		case SDL_SCANCODE_SPACE: scancode = 0x39; break;
 		case SDL_SCANCODE_CAPSLOCK: scancode = 0x3a; break;
@@ -539,19 +540,49 @@ static int keysymToAtari(SDL_Keysym *keysym)
 		case SDL_SCANCODE_F9: scancode = 0x43; break;
 		case SDL_SCANCODE_F10: scancode = 0x44; break;
 
+		case SDL_SCANCODE_HOME: scancode = 0x47; break;
+		case SDL_SCANCODE_UP: scancode = 0x48; break;
+		case SDL_SCANCODE_PAGEUP: scancode = 0x49; break;
+		case SDL_SCANCODE_KP_MINUS: scancode = 0x4a; break;
+		case SDL_SCANCODE_LEFT: scancode = 0x4b; break;
+		case SDL_SCANCODE_RALT: scancode = 0x4c; break;
+		case SDL_SCANCODE_RIGHT: scancode = 0x4d; break;
+		case SDL_SCANCODE_KP_PLUS: scancode = 0x4e; break;
+		case SDL_SCANCODE_END: scancode = 0x4f; break;	/* Milan's scancode for End */
+		case SDL_SCANCODE_DOWN: scancode = 0x50; break;
+		case SDL_SCANCODE_PAGEDOWN: scancode = 0x51; break;
+		case SDL_SCANCODE_INSERT: scancode = 0x52; break;
+		case SDL_SCANCODE_DELETE: scancode = 0x53; break;
+
 		case SDL_SCANCODE_NONUSBACKSLASH: scancode = 0x60; break;
-		case SDL_SCANCODE_KP_LEFTPAREN: scancode = 0x63; break;
+		case SDL_SCANCODE_UNDO: scancode = 0x61; break;
+		case SDL_SCANCODE_HELP: scancode = 0x62; break;
+		case SDL_SCANCODE_KP_LEFTPAREN:  scancode = 0x63; break;
 		case SDL_SCANCODE_KP_RIGHTPAREN: scancode = 0x64; break;
-		
-		case SDL_SCANCODE_SCROLLLOCK: scancode = 0x00; break;
-		case SDL_SCANCODE_PAUSE: scancode = 0x00; break;
+		case SDL_SCANCODE_KP_DIVIDE:   scancode = 0x65; break;
+		case SDL_SCANCODE_KP_MULTIPLY: scancode = 0x66; break;
+		case SDL_SCANCODE_KP_7: scancode = 0x67; break;
+		case SDL_SCANCODE_KP_8: scancode = 0x68; break;
+		case SDL_SCANCODE_KP_9: scancode = 0x69; break;
+		case SDL_SCANCODE_KP_4: scancode = 0x6A; break;
+		case SDL_SCANCODE_KP_5: scancode = 0x6B; break;
+		case SDL_SCANCODE_KP_6: scancode = 0x6C; break;
+		case SDL_SCANCODE_KP_1: scancode = 0x6D; break;
+		case SDL_SCANCODE_KP_2: scancode = 0x6E; break;
+		case SDL_SCANCODE_KP_3: scancode = 0x6F; break;
+		case SDL_SCANCODE_KP_0: scancode = 0x70; break;
+		case SDL_SCANCODE_KP_PERIOD: scancode = 0x71; break;
+		case SDL_SCANCODE_KP_ENTER:   scancode = 0x72; break;
 	}
 	if (scancode != 0)
 	{
 		keysym->scancode = SDL_Scancode(scancode);
 		return scancode;
 	}
-#endif
+	bug("Unmapped keycode: 0x%x, scancode %d (0x%x), keysym '%s'",
+		keysym->sym, keysym->scancode, keysym->scancode, SDL_GetKeyName(keysym->sym));
+	return scancode;
+#else
 	switch ((unsigned int) keysym->sym)
 	{
 		/* Numeric Pad */
@@ -597,7 +628,6 @@ static int keysymToAtari(SDL_Keysym *keysym)
 		case SDLK_RALT: scancode = RALT_ATARI_SCANCODE; break;
 	}
 
-#if !SDL_VERSION_ATLEAST(2, 0, 0)
 	static unsigned int offset = UNDEFINED_OFFSET;
 	if (scancode == 0)
 	{
@@ -918,7 +948,9 @@ static void process_keyboard_event(const SDL_Event &event)
 	// send all pressed keys to IKBD
 	if (send2Atari) {
 		int scanAtari = keysymToAtari(&keysym);
-		D(bug("Host scancode = %d ($%02x), Atari scancode = %d ($%02x), keycode = '%s' ($%02x)", keysym.scancode, keysym.scancode, pressed ? scanAtari : scanAtari|0x80, pressed ? scanAtari : scanAtari|0x80, SDL_GetKeyName(sym), sym));
+		if (pressed) {
+			bug("Host scancode = %d ($%02x), Atari scancode = %d ($%02x), keycode = '%s' ($%02x)", keysym.scancode, keysym.scancode, pressed ? scanAtari : scanAtari|0x80, pressed ? scanAtari : scanAtari|0x80, SDL_GetKeyName(sym), sym);
+		}
 		if (scanAtari > 0) {
 			if (!pressed)
 				scanAtari |= 0x80;
