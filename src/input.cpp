@@ -917,32 +917,32 @@ static void process_keyboard_event(const SDL_Event &event)
 	}
 
 	// map special keys to Atari range of scancodes
-	if (sym == SDLK_PAGEUP) {
-		if (pressed) {
-			if (! shifted)
-				getIKBD()->SendKey(0x2a);	// press and hold LShift
-			getIKBD()->SendKey(0x48);	// press keyUp
-		}
-		else {
-			getIKBD()->SendKey(0xc8);	// release keyUp
-			if (! shifted)
-				getIKBD()->SendKey(0xaa);	// release LShift
-		}
-		send2Atari = false;
-	}
-	else if (sym == SDLK_PAGEDOWN) {
-		if (pressed) {
-			if (! shifted)
-				getIKBD()->SendKey(0x2a);	// press and hold LShift
-			getIKBD()->SendKey(0x50);	// press keyDown
-		}
-		else {
-			getIKBD()->SendKey(0xd0);	// release keyDown
-			if (! shifted)
-				getIKBD()->SendKey(0xaa);	// release LShift
-		}
-		send2Atari = false;
-	}
+//	if (sym == SDLK_PAGEUP) {
+//		if (pressed) {
+//			if (! shifted)
+//				getIKBD()->SendKey(0x2a);	// press and hold LShift
+//			getIKBD()->SendKey(0x48);	// press keyUp
+//		}
+//		else {
+//			getIKBD()->SendKey(0xc8);	// release keyUp
+//			if (! shifted)
+//				getIKBD()->SendKey(0xaa);	// release LShift
+//		}
+//		send2Atari = false;
+//	}
+//	else if (sym == SDLK_PAGEDOWN) {
+//		if (pressed) {
+//			if (! shifted)
+//				getIKBD()->SendKey(0x2a);	// press and hold LShift
+//			getIKBD()->SendKey(0x50);	// press keyDown
+//		}
+//		else {
+//			getIKBD()->SendKey(0xd0);	// release keyDown
+//			if (! shifted)
+//				getIKBD()->SendKey(0xaa);	// release LShift
+//		}
+//		send2Atari = false;
+//	}
 
 
 	// send all pressed keys to IKBD
