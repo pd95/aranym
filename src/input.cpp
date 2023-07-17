@@ -196,6 +196,102 @@ static SDL_Cursor *init_empty_cursor()
 	return SDL_CreateCursor(data, mask, 16, 16, 0, 0);
 }
 
+static bool hasKeymap = false;
+static int scancodeSDL2Atari[SDL_NUM_SCANCODES];
+
+static bool init_keymap() {
+	char keymap_filename[512];
+	getConfFilename(ARANYMKEYMAP, keymap_filename, sizeof(keymap_filename));
+
+	memset(scancodeSDL2Atari, 0, sizeof(scancodeSDL2Atari));
+
+	struct stat buf;
+	if (stat(keymap_filename, &buf) == -1) {
+		infoprint("Config file '%s' not found.", keymap_filename);
+		return false;
+	}
+
+	FILE *in = fopen(keymap_filename, "rw");
+	if (!in) {
+		bug("Unable to open file '%s': %s", keymap_filename, strerror(errno));
+		return false;
+	}
+
+	char line[1024];
+	int numMappings = 0;
+	while (!feof(in)) {
+		if (!fgets(line, sizeof(line), in)) {
+			break;
+		}
+
+		char *start = NULL;
+		char *ptr = line;
+		int len = 0;
+		while(*ptr) {
+			if (!start) {
+				// find start of data: skip leading whitespaces
+				if (*ptr == ' ' || *ptr == '\t') {
+					ptr++;
+				} else {
+					start = ptr;
+				}
+			} else {
+				// reached end of relevant data
+				if (*ptr == ';' || *ptr == '#' || *ptr == '\r' || *ptr == '\n') {
+					// trim trailing whitespaces
+					do {
+						*ptr = 0;
+						if (ptr > start && (ptr[-1] == ' ' || ptr[-1] == '\t')) {
+							--ptr;
+						}
+					} while(*ptr);
+
+					len = ptr-start;
+				} else {
+					ptr++;
+				}
+			}
+		}
+
+		D(bug("Extracted line: <%s> with length %d\n", start, len));
+		int sdl_scancode = 0, atari_scancode = 0;
+
+		// read hex or decimal value
+		ptr = start;
+		if (ptr[0] == '0' && ptr[1] == 'x') {
+			sscanf(ptr+2, "%x", &sdl_scancode);
+		} else {
+			sscanf(ptr, "%d", &sdl_scancode);
+		}
+
+		// skip to comma, then skip whitespaces
+		do {
+			ptr++;
+		} while(*ptr && *ptr != ',');
+		do {
+			ptr++;
+		} while(*ptr && (*ptr == ' ' || *ptr == '\t'));
+
+		// read hex or decimal value
+		if (ptr[0] == '0' && ptr[1] == 'x') {
+			sscanf(ptr+2, "%x", &atari_scancode);
+		} else {
+			sscanf(ptr, "%d", &atari_scancode);
+		}
+
+		// Process a valid mapping
+		D(bug("Read %d %d\n", sdl_scancode, atari_scancode)) ;
+		if (sdl_scancode > 0 && atari_scancode > 0 && sdl_scancode < SDL_NUM_SCANCODES) {
+			scancodeSDL2Atari[sdl_scancode] = atari_scancode;
+			numMappings++;
+		}
+	}
+
+	printf("Read %d scancode mappings from '%s'\n", numMappings, keymap_filename);
+
+	return numMappings > 0;
+}
+
 
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 static int SDLCALL event_filter(void * /* userdata */, SDL_Event *event)
@@ -247,6 +343,7 @@ void InputReset()
 	// FIXME: add? InputInit();
 	// FIXME: how??? capslockState (detect)
 	host->video->CapslockState((SDL_GetModState() & KMOD_CAPS) != 0);
+	hasKeymap = init_keymap();
 }
 
 void InputExit()
@@ -467,6 +564,14 @@ static int keysymToAtari(SDL_Keysym *keysym)
 {
 	unsigned int scancode = 0;
 
+	if (hasKeymap) {
+		scancode = scancodeSDL2Atari[(unsigned int) keysym->scancode];
+		if (scancode > 0) {
+			bug("Custom scancode mapping applied");
+			return scancode;
+		}
+	}
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
 	switch( (unsigned int) keysym->scancode)
 	{
@@ -618,7 +723,7 @@ static int keysymToAtari(SDL_Keysym *keysym)
 		case SDLK_DELETE: scancode = 0x53; break;	/* Delete */
 
 		case SDLK_NUMLOCKCLEAR: scancode = 0x63; break;
-		
+
 		case SDLK_BACKQUOTE:
 		case SDLK_LESS: scancode = 0x60; break;	/* a '<>' key next to short left Shift */
 
