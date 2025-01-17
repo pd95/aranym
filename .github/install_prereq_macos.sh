@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 SDL2_VERSION=
 DEPENDENCIES_DATE=2023-07-02
@@ -11,7 +12,6 @@ brew install autoconf automake
 # Download additional dependencies (libjpeg, libgmp, libgmpxx, libmpfr) as universal binaries (not available through homebrew)
 curl -s --get https://xn--donz-epa.ch/atari/software/macaranym/Dependencies-$DEPENDENCIES_DATE.zip --output dependencies.zip
 unzip -o dependencies.zip -d ../src/Unix/MacOSX/
-mv external ../src/Unix/MacOSX/external
 cd ..
 
 # Optionally add specific SDL2 version
