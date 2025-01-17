@@ -72,7 +72,7 @@ jobs:
           xcrun stapler staple aranym-*.dmg
 
       - name: Upload dmg
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MacAranym disk image
           path: src/Unix/MacOSX/build/Release/aranym-*.dmg
