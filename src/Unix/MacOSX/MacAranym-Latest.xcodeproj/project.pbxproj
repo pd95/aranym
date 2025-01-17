@@ -3125,6 +3125,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CC = $PROJECT_DIR/scripts/clang_x86_64.sh;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMPILE_DEFS_BASE = "$(inherited) FPU_IEEE FIXED_ADDRESSING FMEMORY=0x51000000 USE_JIT=1 USE_JIT_FPU=1";
 				CONFIGURE_OPTIONS_TARGET = "--enable-fpe=ieee --enable-jit-compiler --enable-jit-fpu";
@@ -3149,6 +3150,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CC = $PROJECT_DIR/scripts/clang_x86_64.sh;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				COMPILE_DEFS_BASE = "$(inherited) FPU_IEEE FIXED_ADDRESSING FMEMORY=0x51000000 USE_JIT=1 USE_JIT_FPU=1";
 				CONFIGURE_OPTIONS_TARGET = "--enable-fpe=ieee --enable-jit-compiler --enable-jit-fpu";
