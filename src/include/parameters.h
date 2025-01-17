@@ -137,6 +137,7 @@ typedef struct {
   bool jitfpu;
   bool jitinline;
   bool jitdebug;
+  bool jit_update_pc;
   uint32 jitcachesize;
   uint32 jitlazyflush;
   char jitblacklist[512];
@@ -249,6 +250,7 @@ typedef enum {
 // Keyboard and mouse
 typedef struct {
   bool wheel_eiffel;	// eiffel compatible scancodes for mouse wheel
+  bool eiffel_single_bytes;	// single-byte scancode values instead of status frames
   bool altgr;			// real AltGr like on Milan
   uint32 /* MIDDLE_BUTTON */ mbutton;
 } bx_ikbd_options_t;

@@ -740,6 +740,7 @@ struct Config_Tag jit_conf[]={
 	{ "JITBlackList", String_Tag, &bx_options.jit.jitblacklist, sizeof(bx_options.jit.jitblacklist), 0},
 	{ "JITInline", Bool_Tag, &bx_options.jit.jitinline, 0, 0},
 	{ "JITDebug", Bool_Tag, &bx_options.jit.jitdebug, 0, 0},
+	{ "JITUpdatePC", Bool_Tag, &bx_options.jit.jit_update_pc, 0, 0},
 	{ NULL , Error_Tag, NULL, 0, 0 }
 };
 
@@ -749,6 +750,7 @@ static void preset_jit()
 	bx_options.jit.jitfpu = true;
 	bx_options.jit.jitcachesize = 8192;
 	bx_options.jit.jitlazyflush = 1;
+	bx_options.jit.jit_update_pc = false;
 	strcpy(bx_options.jit.jitblacklist, "");
 }
 
@@ -1465,6 +1467,7 @@ static void presave_hotkeys() {
 /*************************************************************************/
 struct Config_Tag ikbd_conf[]={
 	{ "WheelEiffel", Bool_Tag, &bx_options.ikbd.wheel_eiffel, 0, 0},
+	{ "EiffelSingle", Bool_Tag, &bx_options.ikbd.eiffel_single_bytes, 0, 0},
 	{ "AltGr", Bool_Tag, &bx_options.ikbd.altgr, 0, 0},
 	{ "MiddleButton", Int_Tag, &bx_options.ikbd.mbutton, 0, 0},
 	{ NULL , Error_Tag, NULL, 0, 0 }
@@ -1473,6 +1476,7 @@ struct Config_Tag ikbd_conf[]={
 static void preset_ikbd()
 {
 	bx_options.ikbd.wheel_eiffel = false;
+	bx_options.ikbd.eiffel_single_bytes = false;
 	bx_options.ikbd.altgr = true;
 	bx_options.ikbd.mbutton = MB_ungrab;
 }

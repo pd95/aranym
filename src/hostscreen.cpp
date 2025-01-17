@@ -247,16 +247,6 @@ void  HostScreen::SetCaption(const char *caption)
 #endif
 }
 
-int HostScreen::getWidth(void)
-{
-	return screen->w;
-}
-
-int HostScreen::getHeight(void)
-{
-	return screen->h;
-}
-
 int HostScreen::getBpp(void)
 {
 	return screen->format->BitsPerPixel;
@@ -320,7 +310,7 @@ void HostScreen::writeSnapshot(SDL_Surface *surf)
 
 	if (snapCounter == 0)
 		snapCounter = get_screenshot_counter();
-	sprintf(filename, "snap%03d.bmp", snapCounter++ );
+	snprintf(filename, sizeof(filename), "snap%03d.bmp", snapCounter++ );
 	safe_strncpy(path, bx_options.snapshot_dir, sizeof(path));
 	addFilename(path, filename, sizeof(path));
 #ifdef SDL_HINT_BMP_SAVE_LEGACY_FORMAT
@@ -1305,6 +1295,24 @@ void HostScreen::destroySurface(HostSurface *hsurf)
 	delete hsurf;
 }
 
+void HostScreen::chunkyToBitplane(uint8 *sdlPixelData, uint16 bpp,
+	uint16 bitplaneWords[8])
+{
+	DUNUSED(bpp);
+	for (int l=0; l<16; l++) {
+		uint8 data = sdlPixelData[l]; // note: this is about 2000 dryhstones speedup (the local variable)
+
+		bitplaneWords[0] <<= 1; bitplaneWords[0] |= (data >> 0) & 1;
+		bitplaneWords[1] <<= 1; bitplaneWords[1] |= (data >> 1) & 1;
+		bitplaneWords[2] <<= 1; bitplaneWords[2] |= (data >> 2) & 1;
+		bitplaneWords[3] <<= 1; bitplaneWords[3] |= (data >> 3) & 1;
+		bitplaneWords[4] <<= 1; bitplaneWords[4] |= (data >> 4) & 1;
+		bitplaneWords[5] <<= 1; bitplaneWords[5] |= (data >> 5) & 1;
+		bitplaneWords[6] <<= 1; bitplaneWords[6] |= (data >> 6) & 1;
+		bitplaneWords[7] <<= 1; bitplaneWords[7] |= (data >> 7) & 1;
+	}
+}
+
 /**
  * Performs conversion from the TOS's bitplane word order (big endian) data
  * into the native chunky color index.
@@ -1452,7 +1460,3 @@ void HostScreen::bitplaneToChunky( uint16 *atariBitplaneData, uint16 bpp,
 	colorValues[14] = d;
 #endif
 }
-
-/*
-vim:ts=4:sw=4:
-*/
