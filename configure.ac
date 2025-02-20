@@ -32,6 +32,12 @@ dnl Silent rules
 # to make
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
+AC_ARG_ENABLE(old-glibc,     [AS_HELP_STRING([--enable-old-glibc],[enable support for old glibc (default=no)])], [enable_old_glibc=$enableval], [enable_old_glibc=no])
+
+if test $enable_old_glibc = yes; then
+AC_DEFINE([ENABLE_OLD_GLIBC], 1, [Define to support old glibc version glibc])
+fi
+
 AC_MSG_CHECKING(whether we are using glibc)
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <stdlib.h>
 #ifndef __GLIBC__
@@ -39,7 +45,7 @@ no
 #endif]],[[]])], result=yes, result=no)
 AC_MSG_RESULT([$result])
 
-if test $result = yes; then
+if test $result = yes -a $enable_old_glibc = yes; then
 AC_DEFINE([HAVE_GLIBC], 1, [Define if using glibc])
 dnl append that also to confdefs.h
 echo "#include \"${srcdir}/src/include/linux/libcwrap.h\"" >> confdefs.h
@@ -50,7 +56,8 @@ AH_TOP([
 #define __ARANYM_CONFIG_H__
 
 #undef HAVE_GLIBC
-#ifdef HAVE_GLIBC
+#undef ENABLE_OLD_GLIBC
+#if defined(HAVE_GLIBC) && defined(ENABLE_OLD_GLIBC)
 #include "linux/libcwrap.h"
 #endif
 
@@ -1374,9 +1381,10 @@ elif test "$GCC" = yes && $HAVE_ARM; then
     case "$host_cpu" in
 	armv6*)
            ASM_OPTIMIZATIONS="ARM/V6 architecture w optimized flags"
-	   DEFINES="$DEFINES -DARMV6_ASSEMBLY -DARM_ASSEMBLY -DOPTIMIZED_FLAGS"
-           CFLAGS="$CFLAGS -march=armv6"
-           CXXFLAGS="$CXXFLAGS -march=armv6"
+	       DEFINES="$DEFINES -DARMV6_ASSEMBLY -DARM_ASSEMBLY -DOPTIMIZED_FLAGS"
+	       ARM_CFLAGS="-march=armv6";
+           CFLAGS="$CFLAGS $ARM_CFLAGS"
+           CXXFLAGS="$CXXFLAGS $ARM_CFLAGS"
 	   ;;
 	armv7*|armv8*|armv9*)
            ASM_OPTIMIZATIONS="ARM/V7+ architecture w optimized flags"
@@ -1709,39 +1717,70 @@ m4_define(use_sdl2_default, yes)
 m4_case(use_sdl2_default, yes,
 [AC_ARG_ENABLE(sdl2,    [AS_HELP_STRING([--disable-sdl2],[disable use of SDL2 even if available (default=no)])], , [enable_sdl2=auto])],
 [AC_ARG_ENABLE(sdl2,    [AS_HELP_STRING([--enable-sdl2],[use SDL2 if available (default=no)])], , [enable_sdl2=no])])
+AC_ARG_ENABLE(static-sdl, [AS_HELP_STRING([--enable-static-sdl], [use static version of SDL (default=no)])], [sdl_static=$enableval], [sdl_static=no])
 
 SDL_CFLAGS=
 SDL_LIBS=
 no_sdl=yes
 no_sdl2=yes
 if test "$OS_TYPE" = darwin -a "$WITH_FINK" = no; then
-	ARANYM_CHECK_FRAMEWORK(SDL, [])
-	if test "$have_framework_SDL" = yes ; then
-		ARANYM_CHECK_FRAMEWORK_LOCATION(SDL)
-        	sdl_version="`defaults read $SDL_LOCATION/Resources/Info.plist CFBundleShortVersionString`"
-		# SDL 1.2.15 has still 1.2.14 in the Info.plist file
-		if test "$sdl_version" = "1.2.14"; then
-			if test `defaults read $SDL_LOCATION/Resources/Info.plist BuildMachineOSBuild` = "12F2518"; then
-				sdl_version=1.2.15
-			fi
-		fi
-        	no_sdl=no
-	fi
+    ARANYM_CHECK_FRAMEWORK(SDL, [])
+    if test "$have_framework_SDL" = yes ; then
+        ARANYM_CHECK_FRAMEWORK_LOCATION(SDL)
+        sdl_version="`defaults read $SDL_LOCATION/Resources/Info.plist CFBundleShortVersionString`"
+        # SDL 1.2.15 has still 1.2.14 in the Info.plist file
+        if test "$sdl_version" = "1.2.14"; then
+            if test `defaults read $SDL_LOCATION/Resources/Info.plist BuildMachineOSBuild` = "12F2518"; then
+                sdl_version=1.2.15
+            fi
+        fi
+        no_sdl=no
+    fi
     if test "$enable_sdl2" != no; then
-		ARANYM_CHECK_FRAMEWORK(SDL2, [])
-		if test "$have_framework_SDL2" = yes ; then
-			ARANYM_CHECK_FRAMEWORK_LOCATION(SDL2)
+        ARANYM_CHECK_FRAMEWORK(SDL2, [])
+        if test "$have_framework_SDL2" = yes ; then
+            ARANYM_CHECK_FRAMEWORK_LOCATION(SDL2)
             sdl2_version="`defaults read $SDL2_LOCATION/Resources/Info.plist CFBundleShortVersionString`"
             no_sdl2=no
-		fi
-	fi
+        fi
+    fi
 else
-	dnl Try macro from sdl.m4 and sdl2.m4
-	AM_PATH_SDL(1.2.12)
-	if test "$enable_sdl2" != no; then
-		AM_PATH_SDL2(2.0.3)
-	fi
+    if test "$sdl_static" = yes; then
+        if test "$enable_sdl2" != no && test -d "$srcdir/SDL2"; then
+            no_sdl2=no
+            SDL2_CFLAGS='-I$(top_srcdir)/SDL2/include'
+            SDL_STATIC_LIB='$(top_builddir)/SDL2/build/.libs/libSDL2.a'
+            SDL2_LIBS='$(SDL_STATIC_LIB)'
+            sdl_version=`sed -n -e 's/#define.*SDL_MAJOR_VERSION[^0-9]*\([0-9][0-9]*\).*$/\1./p
+s/#define.*SDL_MINOR_VERSION[^0-9]*\([0-9][0-9]*\).*$/\1./p
+s/#define.*SDL_PATCHLEVEL[^0-9]*\([0-9][0-9]*\).*$/\1/p' "$srcdir/SDL2/include/SDL_version.h" | tr -d '\n'`
+            sdl_static=SDL2
+        else
+            sdl_static=no
+        fi
+        if test "$enable_sdl2" = no && test -d "$srcdir/SDL1"; then
+            no_sdl=no
+            SDL_CFLAGS='-I$(top_srcdir)/SDL1/include'
+            SDL_STATIC_LIB='$(top_builddir)/SDL1/build/.libs/libSDL.a'
+            SDL_LIBS='$(SDL_STATIC_LIB) -lX11 -lXext -lXrandr -lpulse-simple -lpulse'
+            sdl_version=`sed -n -e 's/#define.*SDL_MAJOR_VERSION[^0-9]*\([0-9][0-9]*\).*$/\1./p
+s/#define.*SDL_MINOR_VERSION[^0-9]*\([0-9][0-9]*\).*$/\1./p
+s/#define.*SDL_PATCHLEVEL[^0-9]*\([0-9][0-9]*\).*$/\1/p' "$srcdir/SDL1/include/SDL_version.h" | tr -d '\n'`
+            sdl_static=SDL1
+        else
+            sdl_static=no
+        fi
+    fi
+    if test "$sdl_static" = no; then
+        dnl Try macro from sdl.m4 and sdl2.m4
+        AM_PATH_SDL(1.2.12)
+        if test "$enable_sdl2" != no; then
+            AM_PATH_SDL2(2.0.3)
+        fi
+    fi
 fi
+AC_SUBST([SDL_STATIC_LIB])
+AM_CONDITIONAL([SDL_STATIC], test "$sdl_static" != no)
 if test "$no_sdl" = yes -a "$no_sdl2" = yes; then
 	AC_MSG_ERROR([*** neither SDL nor SDL2 found! ***])
 else
@@ -2299,6 +2338,40 @@ AC_SUBST(LDFLAGS_FOR_BUILD)
 
 if test "$am__include" = "include"; then am__include=-include; fi
 
+top_srcdir=`(cd $srcdir; pwd)`
+
+case $sdl_static in
+	SDL1)
+      echo
+      echo "configuring in SDL1"
+      echo
+	  mkdir -p SDL1/build
+	  cd SDL1 && \
+	  	${top_srcdir}/SDL1/configure \
+	  	CFLAGS="-O2 -fomit-frame-pointer $ARM_CFLAGS -DNO_SHARED_MEMORY" \
+		--prefix=/usr \
+		--disable-shared \
+		--disable-alsatest \
+		--disable-esdtest \
+		--disable-rpath \
+		--disable-x11-shared \
+		--disable-pulseaudio-shared \
+		--disable-esd-shared \
+		--disable-osmesa-shared \
+		--disable-video-svga \
+		--disable-video-ps3 \
+		--disable-input-tslib \
+		&& cd ..
+      ;;
+    SDL2)
+      echo
+      echo "configuring in SDL2"
+      echo
+	  mkdir -p SDL2/build
+	  cd SDL2/build && ${top_srcdir}/SDL2/configure CFLAGS="-O2 -fomit-frame-pointer $ARM_CFLAGS" --prefix=/usr --disable-shared --disable-alsatest --disable-esdtest && cd ../..
+      ;;
+esac
+
 AC_CONFIG_FILES([
 Makefile
 src/Makefile
@@ -2313,6 +2386,7 @@ echo
 echo "ARAnyM configuration summary:"
 echo
 echo "SDL version ................... ........ : $sdl_version"
+echo "SDL static .................... ........ : $sdl_static"
 echo "Use exclusive spcflags handling ........ : $WANT_SPCFLAGS_EXCL"
 echo "Use JIT compiler ....................... : $WANT_JIT"
 echo "Use JIT compiler for FPU instructions .. : $WANT_JIT_FPU"

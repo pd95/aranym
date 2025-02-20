@@ -109,10 +109,6 @@ int32 OpenGLVdiDriver::closeWorkstation(void)
  *
  * Only one mode here.
  *
- * Note that a1 does not point to the VDI struct, but to a place in memory
- * where the VDI struct pointer can be found. Four bytes beyond that address
- * is a pointer to the destination MFDB.
- *
  * Since an MFDB is passed, the source is not necessarily the screen.
  **/
 
@@ -151,10 +147,6 @@ int32 OpenGLVdiDriver::getPixel(memptr vwk, memptr src, int32 x, int32 y)
  * This function has two modes:
  *   - single pixel
  *   - table based multi pixel (special mode 0 (low word of 'y'))
- *
- * Note that a1 does not point to the VDI struct, but to a place in memory
- * where the VDI struct pointer can be found. Four bytes beyond that address
- * is a pointer to the destination MFDB.
  *
  * As usual, only the first one is necessary, and a return with d0 = -1
  * signifies that a special mode should be broken down to the basic one.
@@ -365,11 +357,6 @@ int OpenGLVdiDriver::drawMouse(memptr wk, int32 x, int32 y, uint32 mode,
  *
  * Only one mode here.
  *
- * Note that a1 does not point to the VDI struct, but to a place in memory
- * where the VDI struct pointer can be found. Four bytes beyond that address
- * is a pointer to the destination MFDB, and then comes a VDI struct
- * pointer again (the same) and a pointer to the source MFDB.
- *
  * Since MFDBs are passed, the screen is not necessarily involved.
  *
  * A return with 0 gives a fallback (normally pixel by pixel drawing by
@@ -392,9 +379,14 @@ int32 OpenGLVdiDriver::expandArea(memptr vwk, memptr src, int32 sx, int32 sy,
 {
 	Uint8 *bitmap, *s, *d;
 	int width, srcpitch, dstpitch, y;
+	memptr wk = ReadInt32((vwk & -2) + VWK_REAL_ADDRESS); /* vwk->real_address */
+	uint16 screen_type = ReadInt16(wk + WK_SCREEN_TYPE); /* wk->screen.type */
 
 	if (dest)
-		return VdiDriver::expandArea(vwk, src, sx, sy, dest, dx, dy, w, h, logOp, fgColor, bgColor);
+	{
+		if (screen_type == 0)
+			return VdiDriver::expandArea(vwk, src, sx, sy, dest, dx, dy, w, h, logOp, fgColor, bgColor);
+	}
 
 	/* Allocate temp space for monochrome bitmap */
 	width = (w + 8 + 31) & ~31;
@@ -415,7 +407,7 @@ int32 OpenGLVdiDriver::expandArea(memptr vwk, memptr src, int32 sx, int32 sy,
 		d -= dstpitch;	
 	}
 
-	if (logOp == 1) {
+	if (logOp == MD_REPLACE) {
 		/* First, the back color */
 		gl.Color3ub((bgColor>>16)&0xff,(bgColor>>8)&0xff,bgColor&0xff);
 		gl.Begin(GL_QUADS);
@@ -429,7 +421,7 @@ int32 OpenGLVdiDriver::expandArea(memptr vwk, memptr src, int32 sx, int32 sy,
 	gl.Scissor(dx, host->video->getHeight() - (dy + h), w, h);
 	gl.Enable(GL_SCISSOR_TEST);
 	gl.Enable(GL_COLOR_LOGIC_OP);
-	if (logOp == 3) {
+	if (logOp == MD_XOR) {
 		gl.LogicOp(GL_XOR);
 		gl.Color3ub(0xff,0xff,0xff);
 	} else {
@@ -498,7 +490,7 @@ int32 OpenGLVdiDriver::fillArea(memptr vwk, uint32 x_, uint32 y_,
 		vwk -= 1;
 	}
 
-	D(bug("glvdi: %s %d %d,%d:%d,%d : %d,%d p:%x, (fgc:%lx : bgc:%lx)", "fillArea",
+	D(bug("glvdi: %s %d %d,%d:%d,%d : %d,%d p:%x, (fgc:%x : bgc:%x)", "fillArea",
 	      logOp, x, y, w, h, x + w - 1, x + h - 1, *pattern,
 	      fgColor, bgColor));
 
@@ -514,7 +506,7 @@ int32 OpenGLVdiDriver::fillArea(memptr vwk, uint32 x_, uint32 y_,
 		}
 
 		/* First, the back color */
-		if (logOp == 1) {
+		if (logOp == MD_REPLACE) {
 			gl.Color3ub((bgColor>>16)&0xff,(bgColor>>8)&0xff,bgColor&0xff);
 			gl.Begin(GL_QUADS);
 				gl.Vertex2i(x,y);
@@ -525,7 +517,7 @@ int32 OpenGLVdiDriver::fillArea(memptr vwk, uint32 x_, uint32 y_,
 		}
 
 		gl.Enable(GL_COLOR_LOGIC_OP);
-		if (logOp == 3) {
+		if (logOp == MD_XOR) {
 			gl.LogicOp(GL_XOR);
 			gl.Color3ub(0xff,0xff,0xff);
 		} else {
@@ -552,7 +544,7 @@ int32 OpenGLVdiDriver::fillArea(memptr vwk, uint32 x_, uint32 y_,
 			w = (int16)ReadInt16(table) - x + 1; table+=2;
 
 			/* First, the back color */
-			if (logOp==1) {
+			if (logOp == MD_REPLACE) {
 				gl.Color3ub((bgColor>>16)&0xff,(bgColor>>8)&0xff,bgColor&0xff);
 				gl.Begin(GL_LINES);
 					gl.Vertex2i(x,y);
@@ -561,7 +553,7 @@ int32 OpenGLVdiDriver::fillArea(memptr vwk, uint32 x_, uint32 y_,
 			}
 
 			gl.Enable(GL_COLOR_LOGIC_OP);
-			if (logOp == 3) {
+			if (logOp == MD_XOR) {
 				gl.LogicOp(GL_XOR);
 				gl.Color3ub(0xff,0xff,0xff);
 			} else {
@@ -585,12 +577,12 @@ int32 OpenGLVdiDriver::fillArea(memptr vwk, uint32 x_, uint32 y_,
 	return 1;
 }
 
-void OpenGLVdiDriver::fillArea(uint32 x, uint32 y, uint32 w, uint32 h,
+void OpenGLVdiDriver::hsFillArea(uint32 x, uint32 y, uint32 w, uint32 h,
                                uint16* pattern, uint32 fgColor, uint32 bgColor,
                                uint32 logOp)
 {
 	/* First, the back color */
-	if (logOp==1) {
+	if (logOp == MD_REPLACE) {
 		gl.Color3ub((bgColor>>16)&0xff,(bgColor>>8)&0xff,bgColor&0xff);
 		gl.Begin(GL_LINES);
 			gl.Vertex2i(x,y);
@@ -599,7 +591,7 @@ void OpenGLVdiDriver::fillArea(uint32 x, uint32 y, uint32 w, uint32 h,
 	}
 
 	gl.Enable(GL_COLOR_LOGIC_OP);
-	if (logOp == 3) {
+	if (logOp == MD_XOR) {
 		gl.LogicOp(GL_XOR);
 		gl.Color3ub(0xff,0xff,0xff);
 	} else {
@@ -634,11 +626,6 @@ void OpenGLVdiDriver::fillArea(uint32 x, uint32 y, uint32 w, uint32 h,
  *
  * Only one mode here.
  *
- * Note that a1 does not point to the VDI struct, but to a place in memory
- * where the VDI struct pointer can be found. Four bytes beyond that address
- * is a pointer to the destination MFDB, and then comes a VDI struct
- * pointer again (the same) and a pointer to the source MFDB.
- *
  * Since MFDBs are passed, the screen is not necessarily involved.
  *
  * A return with 0 gives a fallback (normally pixel by pixel drawing by the
@@ -651,10 +638,10 @@ int32 OpenGLVdiDriver::blitArea_M2S(memptr /*vwk*/, memptr src, int32 sx, int32 
 	int y;
 
 	/* Clear rectangle ? */
-	if ((logOp==0) || (logOp==15)) {
-		if (logOp==0) {
+	if ((logOp == ALL_WHITE) || (logOp == ALL_BLACK)) {
+		if (logOp == ALL_WHITE) {
 			gl.Color3ub(0,0,0);
-		} else if (logOp==15) {
+		} else if (logOp == ALL_BLACK) {
 			gl.Color3ub(0xff,0xff,0xff);
 		}
 		gl.Begin(GL_QUADS);
@@ -724,7 +711,7 @@ int32 OpenGLVdiDriver::blitArea_S2M(memptr /*vwk*/, memptr /*src*/, int32 sx, in
 		D(bug("glvdi: blit_s2m: %d planes unsupported",planes));
 		return -1;
 	}
-	if ((logOp!=0) && (logOp!=3) && (logOp!=15)) {
+	if ((logOp != ALL_WHITE) && (logOp != S_ONLY) && (logOp != ALL_BLACK)) {
 		bug("glvdi: blit_s2m: logOp %d unsupported",logOp);
 		return -1;
 	}
@@ -736,13 +723,13 @@ int32 OpenGLVdiDriver::blitArea_S2M(memptr /*vwk*/, memptr /*src*/, int32 sx, in
 
 	for (y=0;y<h;y++) {
 		switch(logOp) {
-			case 0:
+			case ALL_WHITE:
 				memset(destAddress, 0, w*(planes>>3));
 				break;
-			case 15:
+			case ALL_BLACK:
 				memset(destAddress, 0xff, w*(planes>>3));
 				break;
-			case 3:
+			case S_ONLY:
 				switch(planes) {
 					case 16:
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
@@ -781,16 +768,16 @@ int32 OpenGLVdiDriver::blitArea_S2S(memptr /*vwk*/, memptr /*src*/, int32 sx,
 	int32 sy, memptr /*dest*/, int32 dx, int32 dy, int32 w, int32 h, uint32 logOp)
 {
 	/* Copy a rectangle on itself ? */
-	if ((sx==dx) && (sy==dy) && (logOp==3)) {
+	if (sx == dx && sy == dy && logOp == S_ONLY) {
 		D(bug("glvdi: blit_s2s: self copy"));
 		return 1;
 	}
 
 	/* Clear rectangle ? */
-	if ((logOp==0) || (logOp==15)) {
-		if (logOp==0) {
+	if (logOp == ALL_WHITE || logOp == ALL_BLACK) {
+		if (logOp == ALL_WHITE) {
 			gl.Color3ub(0,0,0);
-		} else if (logOp==15) {
+		} else if (logOp == ALL_BLACK) {
 			gl.Color3ub(0xff,0xff,0xff);
 		}
 		gl.Begin(GL_QUADS);
@@ -863,7 +850,7 @@ int32 OpenGLVdiDriver::blitArea_S2S(memptr /*vwk*/, memptr /*src*/, int32 sx,
 int OpenGLVdiDriver::drawSingleLine(int x1, int y1, int x2, int y2,
 	uint16 pattern, uint32 fgColor, uint32 bgColor, int logOp)
 {
-	if ((logOp == 1) && (pattern != 0xffff)) {
+	if ((logOp == MD_REPLACE) && (pattern != 0xffff)) {
 		/* First, the back color */
 		gl.Color3ub((bgColor>>16)&0xff,(bgColor>>8)&0xff,bgColor&0xff);
 		if ((x1 == x2) && (y1 == y2)) {
@@ -879,7 +866,7 @@ int OpenGLVdiDriver::drawSingleLine(int x1, int y1, int x2, int y2,
 	}
 
 	gl.Enable(GL_COLOR_LOGIC_OP);
-	if (logOp == 3) {
+	if (logOp == MD_XOR) {
 		gl.LogicOp(GL_XOR);
 		gl.Color3ub(0xff,0xff,0xff);
 	} else {
@@ -915,7 +902,7 @@ int OpenGLVdiDriver::drawTableLine(memptr table, int length, uint16 pattern,
 	int x, y, tmp_length;
 	memptr tmp_table;
 
-	if ((logOp == 1) && (pattern != 0xffff)) {
+	if (logOp == MD_REPLACE && pattern != 0xffff) {
 		/* First, the back color */
 		gl.Color3ub((bgColor>>16)&0xff,(bgColor>>8)&0xff,bgColor&0xff);
 		tmp_length = length;
@@ -938,7 +925,7 @@ int OpenGLVdiDriver::drawTableLine(memptr table, int length, uint16 pattern,
 	}
 
 	gl.Enable(GL_COLOR_LOGIC_OP);
-	if (logOp == 3) {
+	if (logOp == MD_XOR) {
 		gl.LogicOp(GL_XOR);
 		gl.Color3ub(0xff,0xff,0xff);
 	} else {
@@ -1170,14 +1157,14 @@ int32 OpenGLVdiDriver::fillPoly(memptr vwk, memptr points_addr, int n,
 
 	delete [] poly_coords;
 
-	if (logOp == 1) {
+	if (logOp == MD_REPLACE) {
 		/* First, the back color */
 		gl.Color3ub((bgColor>>16)&0xff,(bgColor>>8)&0xff,bgColor&0xff);
 		gl.CallList(tess_list);
 	}
 
 	gl.Enable(GL_COLOR_LOGIC_OP);
-	if (logOp == 3) {
+	if (logOp == MD_XOR) {
 		gl.LogicOp(GL_XOR);
 		gl.Color3ub(0xff,0xff,0xff);
 	} else {
@@ -1203,7 +1190,7 @@ int32 OpenGLVdiDriver::drawText(memptr vwk, memptr text, uint32 length,
 				uint32 ch_w, uint32 ch_h, uint32 fgColor, uint32 bgColor,
 				uint32 logOp, memptr clip)
 {
-	DUNUSED(vwk);
+	UNUSED(vwk);
 	int32 cx1, cy1, cx2, cy2;
 	cx1 = ReadInt32(clip);
 	cy1 = ReadInt32(clip + 4);
@@ -1251,11 +1238,11 @@ int32 OpenGLVdiDriver::drawText(memptr vwk, memptr text, uint32 length,
 	w = ch_w * length;
 	h = ch_h;
 
-	gl.Scissor(cx1,           host->video->getHeight() - cy2 - 1,
+	gl.Scissor(cx1, host->video->getHeight() - cy2 - 1,
 		  cx2 - cx1 + 1, cy2 - cy1 + 1);
 	gl.Enable(GL_SCISSOR_TEST);
 
-	if (logOp == 1) {
+	if (logOp == MD_REPLACE) {
 		/* First, the back color */
 		gl.Color3ub((bgColor >> 16) & 0xff, (bgColor >> 8) & 0xff,
 			   bgColor & 0xff);
@@ -1268,7 +1255,7 @@ int32 OpenGLVdiDriver::drawText(memptr vwk, memptr text, uint32 length,
 	}
 
 	gl.Enable(GL_COLOR_LOGIC_OP);
-	if (logOp == 3) {
+	if (logOp == MD_XOR) {
 		gl.LogicOp(GL_XOR);
 		gl.Color3ub(0xff, 0xff, 0xff);
 	} else {

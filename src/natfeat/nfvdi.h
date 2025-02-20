@@ -40,6 +40,12 @@
 #define MFDB_STAND                 10
 #define MFDB_NPLANES               12
 
+// fVDI structure offsets
+#define VWK_REAL_ADDRESS            0
+#define WK_SCREEN_TYPE              4
+#define WK_SCREEN_MFDB             24
+#define WK_SCREEN_ADDR             (WK_SCREEN_MFDB + MFDB_ADDRESS)
+
 /* gsx modes */
 
 #define MD_REPLACE      1
@@ -116,7 +122,7 @@ public:
 	VdiDriver();
 	virtual ~VdiDriver();
 
-	HostSurface *getSurface(void);
+	HostSurface *getSurface(void) { return surface; }
 
 protected:
 	HostSurface *surface;
@@ -165,9 +171,9 @@ protected:
 	virtual int32 fillArea(memptr vwk, uint32 x_, uint32 y_, int32 w,
 		int32 h, memptr pattern_address, uint32 fgColor, uint32 bgColor,
 		uint32 logOp, uint32 interior_style);
-	virtual	void fillArea(uint32 x, uint32 y, uint32 w, uint32 h,
+	void hsFillArea(uint32 x, uint32 y, uint32 w, uint32 h,
 	                      uint16* pattern, uint32 fgColor, uint32 bgColor,
-	                      uint32 logOp) = 0;
+	                      uint32 logOp);
 	virtual int32 drawLine(memptr vwk, uint32 x1_, uint32 y1_, uint32 x2_,
 		uint32 y2_, uint32 pattern, uint32 fgColor, uint32 bgColor,
 		uint32 logOp, memptr clip);
@@ -186,16 +192,15 @@ protected:
 
 	/* Blit memory to screen */
 	virtual int32 blitArea_M2S(memptr vwk, memptr src, int32 sx, int32 sy,
-			memptr dest, int32 dx, int32 dy, int32 w, int32 h, uint32 logOp);
+			memptr dest, int32 dx, int32 dy, int32 w, int32 h, uint32 logOp) = 0;
 	/* Blit screen to screen */
 	virtual int32 blitArea_S2S(memptr vwk, memptr src, int32 sx, int32 sy,
-			memptr dest, int32 dx, int32 dy, int32 w, int32 h, uint32 logOp);
+			memptr dest, int32 dx, int32 dy, int32 w, int32 h, uint32 logOp) = 0;
 	/* Blit screen to memory */
 	virtual int32 blitArea_S2M(memptr vwk, memptr src, int32 sx, int32 sy,
-			memptr dest, int32 dx, int32 dy, int32 w, int32 h, uint32 logOp);
+			memptr dest, int32 dx, int32 dy, int32 w, int32 h, uint32 logOp) = 0;
 
 	/* Inlinable functions */
-	void chunkyToBitplane(uint8 *sdlPixelData, uint16 bpp, uint16 bitplaneWords[8]);
 	uint32 applyBlitLogOperation(int logicalOperation, uint32 destinationData, uint32 sourceData);
 
 	// fillPoly helpers
@@ -219,6 +224,28 @@ protected:
 		int16* vector;
 	};
 
+	static bool clipLine(int x1, int y1, int x2, int y2, int cliprect[]);
+
+	static inline bool clipped(int x, int y, int cliprect[])
+	{
+		if (x < cliprect[0] || x > cliprect[2])
+			return true;
+		if (y < cliprect[1] || y > cliprect[3])
+			return true;
+		return false;
+	}
+
+	struct {
+		memptr dest;
+		int width;
+		int height;
+		int planes;
+		int pitch;
+		int standard;
+		uint8_t *pixels;
+	} mem_mfdb;
+	void set_mfdb(memptr mfdb);
+
 private:
 	SDL_Cursor *cursor;
 
@@ -227,6 +254,21 @@ private:
 	/* Blit memory to memory */
 	int32 blitArea_M2M(memptr vwk, memptr src, int32 sx, int32 sy,
 			memptr dest, int32 dx, int32 dy, int32 w, int32 h, uint32 logOp);
+
+	int drawSingleLine(int x1, int y1, int x2, int y2, uint16 pattern,
+		uint32 fgColor, uint32 bgColor, int logOp, int cliprect[]);
+	int drawTableLine(memptr table, int length, uint16 pattern,
+		uint32 fgColor, uint32 bgColor, int logOp, int cliprect[]);
+	int drawMoveLine(memptr table, int length, memptr index, int moves,
+		uint16 pattern, uint32 fgColor, uint32 bgColor, int logOp, int cliprect[]);
+	void hsDrawLine(int x1, int y1, int x2, int y2,
+		uint16 pattern, uint32 fgColor, uint32 bgColor, uint16 logOp, int cliprect[]);
+	void gfxHLineColor(int x1, int x2, int y, uint16 pattern,
+		uint32 fgColor, uint32 bgColor, uint16 logOp, int cliprect[] );
+	void gfxVLineColor(int x, int y1, int y2,
+		uint16 pattern, uint32 fgColor, uint32 bgColor, uint16 logOp, int cliprect[] );
+	void hsPutPixel(int x, int y, uint32 color);
+	uint32 hsGetPixel(int x, int y);
 
 	int index_count;
 	int crossing_count;

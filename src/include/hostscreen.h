@@ -131,8 +131,8 @@ class HostScreen: public DirtyRects
 	void EnableOpenGLVdi(void);
 	void DisableOpenGLVdi(void);
 
-	int getWidth(void);
-	int getHeight(void);
+	int getWidth(void) { return screen->w; }
+	int getHeight(void) { return screen->h; }
 	virtual int getBpp(void);
 
 	/**
@@ -140,6 +140,7 @@ class HostScreen: public DirtyRects
 	 **/
 	static void bitplaneToChunky( uint16 *atariBitplaneData, uint16 bpp,
 		uint8 colorValues[16], int horiz_shift = 0);
+	static void chunkyToBitplane(uint8 *sdlPixelData, uint16 bpp, uint16 bitplaneWords[8]);
 
 	void doScreenshot(void);
 
