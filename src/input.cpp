@@ -255,33 +255,57 @@ static bool init_keymap() {
 		}
 
 		D(bug("Extracted line: <%s> with length %d\n", start, len));
-		int sdl_scancode = 0, atari_scancode = 0;
-
-		// read hex or decimal value
-		ptr = start;
-		if (ptr[0] == '0' && ptr[1] == 'x') {
-			sscanf(ptr+2, "%x", &sdl_scancode);
-		} else {
-			sscanf(ptr, "%d", &sdl_scancode);
+		if (len == 0) {
+			continue;
 		}
 
-		// skip to comma, then skip whitespaces
+		// identify string start of SDL and Atari key string
+		char *sdl_key_str = start, *atari_key_str = NULL;
+
+		// skip to comma (terminating current string at whitespaces)
+		ptr = start;
 		do {
+			if (*ptr == ' ' || *ptr == '\t') {
+				*ptr = 0;
+			}
 			ptr++;
 		} while(*ptr && *ptr != ',');
+		if (*ptr == ',') {
+			*ptr = 0;
+		}
+		// skip whitespaces after comma
 		do {
 			ptr++;
 		} while(*ptr && (*ptr == ' ' || *ptr == '\t'));
 
+		atari_key_str = ptr;
+
+
+		// Now convert the strings to scan codes
+		int sdl_scancode = 0, atari_scancode = 0;
+
 		// read hex or decimal value
-		if (ptr[0] == '0' && ptr[1] == 'x') {
-			sscanf(ptr+2, "%x", &atari_scancode);
+		if (sdl_key_str[0] == '0' && sdl_key_str[1] == 'x') {
+			sscanf(sdl_key_str+2, "%x", &sdl_scancode);
+		} else if (sdl_key_str[0] >= '0' && sdl_key_str[0] <= '9') {
+			sscanf(sdl_key_str, "%d", &sdl_scancode);
 		} else {
-			sscanf(ptr, "%d", &atari_scancode);
+			// Try to parse scan code from SDL scancode name
+			sdl_scancode = SDL_GetScancodeFromName(sdl_key_str);
+			if (sdl_scancode == SDL_SCANCODE_UNKNOWN) {
+				bug("Error processing textual scancode '%s': %s", sdl_key_str, SDL_GetError());
+			}
+		}
+
+		// read hex or decimal value
+		if (atari_key_str[0] == '0' && atari_key_str[1] == 'x') {
+			sscanf(atari_key_str+2, "%x", &atari_scancode);
+		} else {
+			sscanf(atari_key_str, "%d", &atari_scancode);
 		}
 
 		// Process a valid mapping
-		D(bug("Read %d %d\n", sdl_scancode, atari_scancode)) ;
+		bug("  keymap SDL %d (%s) to Atari %d (%s)", sdl_scancode, sdl_key_str, atari_scancode, atari_key_str);
 		if (sdl_scancode > 0 && atari_scancode > 0 && sdl_scancode < SDL_NUM_SCANCODES) {
 			scancodeSDL2Atari[sdl_scancode] = atari_scancode;
 			numMappings++;
@@ -682,12 +706,8 @@ static int keysymToAtari(SDL_Keysym *keysym)
 	}
 	if (scancode != 0)
 	{
-		keysym->scancode = SDL_Scancode(scancode);
 		return scancode;
 	}
-	bug("Unmapped keycode: 0x%x, scancode %d (0x%x), keysym '%s'",
-		keysym->sym, keysym->scancode, keysym->scancode, SDL_GetKeyName(keysym->sym));
-	return scancode;
 #else
 	switch ((unsigned int) keysym->sym)
 	{
@@ -760,9 +780,9 @@ static int keysymToAtari(SDL_Keysym *keysym)
 #endif
 
 	if (scancode == 0 && keysym->scancode != 0)
-		bug("keycode: %d (0x%x), scancode %d (0x%x), keysym '%s' is not mapped",
+		bug("keycode: %d (0x%x), scancode %d (0x%x '%s'), keysym '%s' is not mapped",
 			keysym->sym, keysym->sym,
-			keysym->scancode, keysym->scancode,
+			keysym->scancode, keysym->scancode, SDL_GetScancodeName(keysym->scancode),
 			SDL_GetKeyName(keysym->sym));
 	keysym->scancode = SDL_Scancode(scancode);
 	return scancode;
