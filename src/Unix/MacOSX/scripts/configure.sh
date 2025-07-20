@@ -121,7 +121,7 @@ for ARCH in $ARCHS ; do
   echo ; echo "Running configure for architecture $ARCH / $CPU_TYPE"
   echo "Current COMPILE_DEFS=$COMPILE_DEFS"
 
-  CFLAGS="-arch $ARCH" "$SOURCE_DIR/../configure" $CONFIGURE_OPTIONS --disable-dependency-tracking --disable-maintainer-mode --host=$HOSTARCH-apple-$OSTYPE || exit 1
+  "$SOURCE_DIR/../configure" $CONFIGURE_OPTIONS --disable-dependency-tracking --disable-maintainer-mode --host=$HOSTARCH-apple-$OSTYPE || exit 1
 
   if [ "$ARCH" = "ppc" -a "$SDK_NAME" = "macosx10.3.9" ]; then
     # 10.3.9 compatibility:
