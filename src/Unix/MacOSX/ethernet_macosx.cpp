@@ -359,7 +359,7 @@ bool BPFEthernetHandler::open()
 	{
 		// convert and validate MAC address from configuration
 		// default MAC Address is just made up
-		uint8 mac_addr[6] = {'\0','A','E','T','H', '0'+ethX };
+		uint8 mac_addr[6] = {'\0','A','E','T','H', (uint8)('0'+ethX) };
 
 		// convert user-defined MAC Address from string to 6 bytes array
 		char *mac_text = bx_options.ethernet[ethX].mac_addr;
