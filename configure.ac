@@ -1727,10 +1727,10 @@ if test "$OS_TYPE" = darwin -a "$WITH_FINK" = no; then
     ARANYM_CHECK_FRAMEWORK(SDL, [])
     if test "$have_framework_SDL" = yes ; then
         ARANYM_CHECK_FRAMEWORK_LOCATION(SDL)
-        sdl_version="`defaults read $SDL_LOCATION/Resources/Info.plist CFBundleShortVersionString`"
+        sdl_version="`defaults read $SDL_LOCATION/Resources/Info CFBundleShortVersionString`"
         # SDL 1.2.15 has still 1.2.14 in the Info.plist file
         if test "$sdl_version" = "1.2.14"; then
-            if test `defaults read $SDL_LOCATION/Resources/Info.plist BuildMachineOSBuild` = "12F2518"; then
+            if test `defaults read $SDL_LOCATION/Resources/Info BuildMachineOSBuild` = "12F2518"; then
                 sdl_version=1.2.15
             fi
         fi
@@ -1740,7 +1740,7 @@ if test "$OS_TYPE" = darwin -a "$WITH_FINK" = no; then
         ARANYM_CHECK_FRAMEWORK(SDL2, [])
         if test "$have_framework_SDL2" = yes ; then
             ARANYM_CHECK_FRAMEWORK_LOCATION(SDL2)
-            sdl2_version="`defaults read $SDL2_LOCATION/Resources/Info.plist CFBundleShortVersionString`"
+            sdl2_version="`defaults read $SDL2_LOCATION/Resources/Info CFBundleShortVersionString`"
             no_sdl2=no
         fi
     fi
