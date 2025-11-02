@@ -2296,7 +2296,7 @@ bool decode_switches(int argc, char **argv)
 	return true;
 }
 
-const char *getConfigFile() {
+const char *getConfigFile(void) {
 	return config_file;
 }
 

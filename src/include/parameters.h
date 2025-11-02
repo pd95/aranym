@@ -362,7 +362,7 @@ char *keysymToString(char *buffer, const bx_hotkey *keysym);
 bool stringToKeysym(bx_hotkey *keysym, const char *string);
 char **split_pathlist(const char *pathlist);
 
-extern const char *getConfigFile();
+extern const char *getConfigFile(void);
 void setConfigFile(const char *filename);
 extern bool loadSettings(const char *);
 extern bool saveSettings(const char *);
